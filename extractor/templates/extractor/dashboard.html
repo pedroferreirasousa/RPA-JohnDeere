@@ -1,0 +1,547 @@
+{% extends "extractor/base.html" %}
+{% load tz %}
+
+{% block content %}
+
+<!-- ── Summary bar ──────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="card-icon icon-green" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Token</div>
+        {% if active_token %}
+          <div class="fw-bold text-jd" style="font-size:.95rem;">Ativo</div>
+        {% else %}
+          <div class="fw-bold text-danger" style="font-size:.95rem;">Inativo</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="card-icon icon-blue" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Pendentes</div>
+        <div class="fw-bold" style="font-size:.95rem;">{{ pending_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="card-icon icon-green" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Processados</div>
+        <div class="fw-bold" style="font-size:.95rem;">{{ done_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="card-icon icon-gray" style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Execuções</div>
+        <div class="fw-bold" style="font-size:.95rem;">{{ run_logs|length }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- ── Card: Autenticação ─────────────────────────────────────────────────── -->
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div class="card-icon icon-green"><i class="fa-solid fa-key"></i></div>
+        <strong>Autenticação JD</strong>
+      </div>
+      <div class="card-body d-flex flex-column">
+        {% if active_token %}
+          <div class="status-pill active mb-3 align-self-start">
+            <span class="status-dot green"></span>Token Ativo
+          </div>
+          <div class="rounded-3 p-3 mb-3" style="background:#f8faf7;border:1px solid #d4e8cf;">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <i class="fa-regular fa-clock text-jd" style="font-size:.8rem;"></i>
+              <span class="text-muted" style="font-size:.75rem;">Capturado em</span>
+            </div>
+            <strong style="font-size:.88rem;">{{ active_token.captured_at|localtime|date:"d/m/Y H:i" }}</strong>
+          </div>
+          <p class="text-muted small mb-0 mt-auto">
+            Tokens expiram após ~1h de inatividade. Se "Implementar" retornar erro 401, autentique novamente.
+          </p>
+        {% else %}
+          <div class="status-pill inactive mb-3 align-self-start">
+            <span class="status-dot red"></span>Sem Token
+          </div>
+          <p class="text-muted small">Nenhum token ativo. Clique em <strong>Autenticar</strong> para iniciar o processo — o sistema abrirá o navegador, preencherá as credenciais e aguardará somente a aprovação do MFA no celular.</p>
+        {% endif %}
+        <div class="mt-auto pt-3 section-divider d-flex flex-column gap-2">
+          <button class="btn btn-jd w-100" id="btn-auth">
+            <i class="fa-solid fa-fingerprint me-2"></i>Autenticar no JD
+          </button>
+          <button class="btn btn-outline-secondary w-100 btn-sm" id="btn-auth-manual"
+                  data-bs-toggle="modal" data-bs-target="#manualAuthModal">
+            <i class="fa-solid fa-paste me-1"></i>Colar token manualmente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Card: Chassis Pendentes ───────────────────────────────────────────── -->
+  <div class="col-md-8">
+    <div class="card h-100">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <div class="card-icon icon-blue"><i class="fa-solid fa-list-check"></i></div>
+          <strong>Chassis Pendentes</strong>
+          {% if pending_count > 0 %}
+            <span class="badge rounded-pill" style="background:#fff3cd;color:#856404;font-size:.75rem;">{{ pending_count }} aguardando</span>
+          {% endif %}
+        </div>
+        {% if pending_count > 0 %}
+          {% if active_token %}
+            <button class="btn btn-jd btn-sm px-3" id="btn-implement">
+              <i class="fa-solid fa-play me-1"></i>Implementar {{ pending_count }}
+            </button>
+          {% else %}
+            <button class="btn btn-sm btn-outline-secondary" disabled title="Autentique primeiro">
+              <i class="fa-solid fa-lock me-1"></i>Sem token
+            </button>
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="card-body" style="max-height: 220px; overflow-y: auto;">
+        {% if pending_chassis %}
+          <div class="d-flex flex-wrap gap-2">
+            {% for c in pending_chassis %}
+              <span class="chassi-tag">
+                <i class="fa-solid fa-tractor me-1" style="color:#367c2b;font-size:.7rem;"></i>{{ c.pin }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="fa-regular fa-circle-check fa-2x d-block mb-2 text-jd"></i>
+            <span class="small">Nenhum chassi pendente.<br>O Airflow ainda não enviou novos registros ou todos já foram processados.</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Card: Histórico ───────────────────────────────────────────────────── -->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex align-items-center gap-2">
+        <div class="card-icon icon-gray"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <strong>Histórico de Execuções</strong>
+        <span class="text-muted small ms-auto">
+          <i class="fa-solid fa-database me-1 text-jd"></i>{{ done_count }} chassis processados no total
+        </span>
+      </div>
+      <div class="card-body p-0">
+        {% if run_logs %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-4">Início</th>
+                  <th>Duração</th>
+                  <th>Chassis</th>
+                  <th>Inseridos</th>
+                  <th>Erros</th>
+                  <th>Status</th>
+                  <th class="pe-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in run_logs %}
+                <tr>
+                  <td class="ps-4 small text-muted">{{ log.started_at|localtime|date:"d/m/Y H:i:s" }}</td>
+                  <td class="small text-muted">
+                    {% if log.finished_at %}
+                      {{ log.started_at|timesince:log.finished_at }}
+                    {% else %}
+                      <span class="badge rounded-pill" style="background:#e8f0fe;color:#1a73e8;font-size:.72rem;">rodando</span>
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ log.total_chassis }}</strong></td>
+                  <td><span class="fw-bold text-jd">{{ log.inserted }}</span></td>
+                  <td>
+                    {% if log.errors > 0 %}
+                      <span class="fw-bold text-danger">{{ log.errors }}</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if log.finished_at %}
+                      {% if log.errors == 0 %}
+                        <span class="badge rounded-pill" style="background:#e8f5e3;color:#2a6122;font-size:.75rem;">Sucesso</span>
+                      {% else %}
+                        <span class="badge rounded-pill" style="background:#fff3cd;color:#856404;font-size:.75rem;">Com erros</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="badge rounded-pill" style="background:#e8f0fe;color:#1a73e8;font-size:.75rem;">Rodando</span>
+                    {% endif %}
+                  </td>
+                  <td class="pe-3">
+                    {% if log.detail %}
+                      <button class="btn btn-sm p-0 text-muted" style="line-height:1;"
+                              data-bs-toggle="modal"
+                              data-bs-target="#logDetailModal"
+                              data-detail="{{ log.detail|escapejs }}"
+                              data-date="{{ log.started_at|localtime|date:'d/m/Y H:i' }}"
+                              title="Ver detalhes">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center text-muted py-5">
+            <i class="fa-regular fa-folder-open fa-2x d-block mb-2"></i>
+            <span class="small">Nenhuma execução registrada ainda.</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div><!-- /row -->
+
+
+<!-- ── Modal: Autenticação Manual ────────────────────────────────────────────── -->
+<div class="modal fade" id="manualAuthModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa-solid fa-hand me-2 text-secondary"></i>Autenticação Manual — JD Warranty System
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+
+        <!-- Passo 1 -->
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width:32px;height:32px;font-weight:700;">1</div>
+          <div>
+            <strong>Abra o JD Warranty System no seu navegador</strong><br>
+            <span class="text-muted small">Clique no botão abaixo — uma nova aba será aberta. Faça o login normalmente (usuário, senha e aprovação no Okta Verify).</span>
+            <div class="mt-2">
+              <a href="https://jdwarrantysystem.deere.com" target="_blank" rel="noopener noreferrer"
+                 class="btn btn-sm btn-success">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Abrir JD Warranty System
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passo 2 -->
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width:32px;height:32px;font-weight:700;">2</div>
+          <div>
+            <strong>Abra as ferramentas de desenvolvedor (F12)</strong><br>
+            <span class="text-muted small">
+              Após o login, pressione <kbd>F12</kbd> → aba <strong>Network (Rede)</strong> → no filtro escreva <code>products</code>.<br>
+              Aguarde um instante ou atualize a página — deve aparecer uma request para <code>/api/products/...</code>.
+            </span>
+          </div>
+        </div>
+
+        <!-- Passo 3 -->
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width:32px;height:32px;font-weight:700;">3</div>
+          <div>
+            <strong>Copie o Bearer token</strong><br>
+            <span class="text-muted small">
+              Clique na request → aba <strong>Headers</strong> → procure <strong>Authorization</strong> em <em>Request Headers</em>.<br>
+              Copie o valor inteiro: <code>Bearer eyJ...</code>
+            </span>
+          </div>
+        </div>
+
+        <!-- Passo 4 — cole aqui -->
+        <div class="d-flex gap-3">
+          <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0"
+               style="width:32px;height:32px;font-weight:700;">4</div>
+          <div class="w-100">
+            <strong>Cole o token abaixo e salve</strong>
+            <textarea id="manual-token-input" class="form-control mt-2 font-monospace small"
+                      rows="3" placeholder="Bearer eyJ..."></textarea>
+            <div id="manual-auth-feedback" class="mt-2 small d-none"></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btn-save-manual-token">
+          <i class="fa-solid fa-floppy-disk me-1"></i>Salvar Token
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Autenticando ───────────────────────────────────────────────────── -->
+<div class="modal fade" id="authModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa-solid fa-fingerprint me-2 text-success"></i>Autenticando JD...
+        </h5>
+      </div>
+      <div class="modal-body py-3">
+        <div class="text-center" id="auth-status-area">
+          <div id="auth-spinner" class="mb-2">
+            <div class="spinner-border text-success" style="width:2.5rem;height:2.5rem;"></div>
+          </div>
+          <p id="auth-message" class="mb-0 text-muted">Iniciando...</p>
+        </div>
+        <div id="auth-vnc-container" class="mt-2"></div>
+      </div>
+      <div class="modal-footer d-none" id="auth-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Implementando ──────────────────────────────────────────────────── -->
+<div class="modal fade" id="implementModal" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">
+          <i class="fa-solid fa-gears me-2 text-primary"></i>Processando chassis...
+        </h5>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div id="impl-spinner" class="mb-3">
+          <div class="spinner-border text-primary" style="width:3.5rem;height:3.5rem;"></div>
+        </div>
+        <p id="impl-message" class="mb-0 text-muted">Iniciando...</p>
+        <div class="progress mt-3 d-none" id="impl-progress-bar" style="height:8px;">
+          <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated"
+               id="impl-progress" role="progressbar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="modal-footer d-none" id="impl-footer">
+        <button class="btn btn-secondary" onclick="location.reload()">
+          <i class="fa-solid fa-rotate-right me-1"></i>Fechar e atualizar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Detalhes do log ────────────────────────────────────────────────── -->
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-scroll me-2"></i>Detalhes — <span id="log-date"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="log-detail"
+             class="bg-light p-3 rounded small"
+             style="max-height:420px;overflow-y:auto;white-space:pre-wrap;"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+const CSRF = "{{ csrf_token }}";
+
+// ── Salvar token manual ───────────────────────────────────────────────────────
+document.getElementById('btn-save-manual-token').addEventListener('click', () => {
+  const token = document.getElementById('manual-token-input').value.trim();
+  const feedback = document.getElementById('manual-auth-feedback');
+
+  if (!token) {
+    feedback.className = 'mt-2 small text-danger';
+    feedback.textContent = 'Cole o Bearer token antes de salvar.';
+    feedback.classList.remove('d-none');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-manual-token');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Salvando...';
+
+  fetch('/auth/manual-save/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        feedback.className = 'mt-2 small text-success fw-bold';
+        feedback.textContent = '✓ ' + data.message;
+        feedback.classList.remove('d-none');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        feedback.className = 'mt-2 small text-danger';
+        feedback.textContent = data.error || 'Erro desconhecido.';
+        feedback.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i>Salvar Token';
+      }
+    })
+    .catch(err => {
+      feedback.className = 'mt-2 small text-danger';
+      feedback.textContent = 'Erro de rede: ' + err;
+      feedback.classList.remove('d-none');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i>Salvar Token';
+    });
+});
+
+// ── Autenticar ────────────────────────────────────────────────────────────────
+document.getElementById('btn-auth').addEventListener('click', () => {
+  const modal = new bootstrap.Modal(document.getElementById('authModal'));
+  modal.show();
+
+  fetch('/auth/start/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+    .then(r => r.json())
+    .then(({ job_id }) => {
+      pollJob(
+        '/auth/status/' + job_id + '/',
+        'auth-message', 'auth-spinner', 'auth-footer',
+        () => setTimeout(() => location.reload(), 1500),
+      );
+    })
+    .catch(err => {
+      document.getElementById('auth-message').textContent = 'Erro ao iniciar: ' + err;
+      document.getElementById('auth-spinner').innerHTML = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+      document.getElementById('auth-footer').classList.remove('d-none');
+    });
+});
+
+// ── Implementar ───────────────────────────────────────────────────────────────
+document.getElementById('btn-implement')?.addEventListener('click', () => {
+  if (!confirm('Processar todos os chassis pendentes e inserir no banco?')) return;
+
+  const modal = new bootstrap.Modal(document.getElementById('implementModal'));
+  modal.show();
+
+  fetch('/implement/start/', { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        document.getElementById('impl-message').textContent = '❌ ' + data.error;
+        document.getElementById('impl-spinner').innerHTML = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+        document.getElementById('impl-footer').classList.remove('d-none');
+        return;
+      }
+      document.getElementById('impl-progress-bar').classList.remove('d-none');
+      pollImplement('/implement/status/' + data.job_id + '/', data.total);
+    })
+    .catch(err => {
+      document.getElementById('impl-message').textContent = 'Erro ao iniciar: ' + err;
+      document.getElementById('impl-spinner').innerHTML = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+      document.getElementById('impl-footer').classList.remove('d-none');
+    });
+});
+
+// ── Poll genérico (auth) ──────────────────────────────────────────────────────
+function pollJob(url, msgId, spinnerId, footerId, onDone) {
+  const interval = setInterval(() => {
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById(msgId).textContent = data.message;
+
+        // Mostra iframe noVNC quando o navegador estiver pronto
+        if (data.vnc_url) {
+          const container = document.getElementById('auth-vnc-container');
+          if (container && !document.getElementById('auth-vnc-frame')) {
+            container.innerHTML = `
+              <div class="mt-3">
+                <p class="text-muted small mb-1">
+                  <i class="fa-solid fa-desktop me-1"></i>
+                  Navegador aberto — aprove o MFA no celular para continuar:
+                </p>
+                <iframe id="auth-vnc-frame"
+                        src="${data.vnc_url}"
+                        style="width:100%;height:540px;border:1px solid #dee2e6;border-radius:6px;"
+                        allow="clipboard-read; clipboard-write"></iframe>
+              </div>`;
+          }
+        }
+
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(interval);
+          const container = document.getElementById('auth-vnc-container');
+          if (container) container.innerHTML = '';
+          document.getElementById(spinnerId).innerHTML = data.status === 'done'
+            ? '<i class="fa-solid fa-circle-check fa-3x text-success"></i>'
+            : '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+          document.getElementById(footerId).classList.remove('d-none');
+          if (data.status === 'done' && onDone) onDone();
+        }
+      });
+  }, 3000);
+}
+
+// ── Poll implement (com barra de progresso) ───────────────────────────────────
+function pollImplement(url, total) {
+  const interval = setInterval(() => {
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('impl-message').textContent = data.message;
+
+        const pct = total > 0 ? Math.round(((data.done || 0) / total) * 100) : 0;
+        document.getElementById('impl-progress').style.width = pct + '%';
+
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(interval);
+          document.getElementById('impl-progress').style.width = '100%';
+          document.getElementById('impl-spinner').innerHTML = data.status === 'done'
+            ? '<i class="fa-solid fa-circle-check fa-3x text-success"></i>'
+            : '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+          document.getElementById('impl-footer').classList.remove('d-none');
+        }
+      });
+  }, 2000);
+}
+
+// ── Modal de log detalhado ────────────────────────────────────────────────────
+document.getElementById('logDetailModal').addEventListener('show.bs.modal', e => {
+  const btn = e.relatedTarget;
+  document.getElementById('log-date').textContent = btn.dataset.date;
+  document.getElementById('log-detail').textContent = btn.dataset.detail || '(sem detalhes)';
+});
+</script>
+{% endblock %}

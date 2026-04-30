@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+env/
+
+# Django
+*.sqlite3
+db/
+staticfiles/
+media/
+
+# Env
+.env
+
+# Dados sensíveis
+data/session.json
+data/*.png
+data/*.xlsx
+
+# Docker
+*.log

@@ -1,0 +1,77 @@
+services:
+  portal:
+    build: .
+    ports:
+      - "8000:8000"
+      - "6080:6080"
+    volumes:
+      - ./db:/app/db
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate --run-syncdb &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  airflow-init:
+    image: apache/airflow:2.9.3-python3.11
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=change-me
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow-data:/opt/airflow
+    command: >
+      bash -c "airflow db init && airflow users create
+        --username admin --password admin
+        --firstname Admin --lastname User
+        --role Admin --email admin@maqnelson.com.br"
+    profiles:
+      - airflow
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.3-python3.11
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow-data:/opt/airflow
+    command: scheduler
+    depends_on:
+      - portal
+    restart: unless-stopped
+    profiles:
+      - airflow
+
+  airflow-webserver:
+    image: apache/airflow:2.9.3-python3.11
+    env_file:
+      - .env
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__SECRET_KEY=change-me
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow-data:/opt/airflow
+    ports:
+      - "8080:8080"
+    command: webserver
+    depends_on:
+      - portal
+    restart: unless-stopped
+    profiles:
+      - airflow
+
+volumes:
+  airflow-data:
