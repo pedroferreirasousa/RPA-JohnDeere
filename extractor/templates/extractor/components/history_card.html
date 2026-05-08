@@ -1,0 +1,82 @@
+{% load tz %}
+{# components/history_card.html — Histórico de execuções #}
+<div class="card span-full">
+  <div class="card-header">
+    <div class="card-icon icon-gray"><i class="fa-solid fa-clock-rotate-left"></i></div>
+    <strong>Histórico de Execuções</strong>
+    <span class="text-muted text-xs" style="margin-left:auto;">
+      <i class="fa-solid fa-database text-green" style="margin-right:.25rem;"></i>
+      {{ done_count }} chassis processados no total
+    </span>
+  </div>
+
+  {% if run_logs %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="padding-left:1.5rem;">Início</th>
+            <th>Duração</th>
+            <th>Chassis</th>
+            <th>Inseridos</th>
+            <th>Erros</th>
+            <th>Status</th>
+            <th style="padding-right:.75rem;width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in run_logs %}
+          <tr>
+            <td style="padding-left:1.5rem;" class="text-muted text-small">
+              {{ log.started_at|localtime|date:"d/m/Y H:i:s" }}
+            </td>
+            <td class="text-muted text-small">
+              {% if log.finished_at %}
+                {{ log.started_at|timesince:log.finished_at }}
+              {% else %}
+                <span class="badge badge-blue">rodando</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ log.total_chassis }}</strong></td>
+            <td><strong class="text-green">{{ log.inserted }}</strong></td>
+            <td>
+              {% if log.errors > 0 %}
+                <strong class="text-danger">{{ log.errors }}</strong>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if log.finished_at %}
+                {% if log.errors == 0 %}
+                  <span class="badge badge-green">Sucesso</span>
+                {% else %}
+                  <span class="badge badge-amber">Com erros</span>
+                {% endif %}
+              {% else %}
+                <span class="badge badge-blue">Rodando</span>
+              {% endif %}
+            </td>
+            <td style="padding-right:.75rem;">
+              {% if log.detail %}
+                <button class="btn-icon"
+                        onclick="openLogDetail(this)"
+                        data-detail="{{ log.detail|escapejs }}"
+                        data-date="{{ log.started_at|localtime|date:'d/m/Y H:i' }}"
+                        title="Ver detalhes">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fa-regular fa-folder-open"></i>
+      <span class="text-small">Nenhuma execução registrada ainda.</span>
+    </div>
+  {% endif %}
+</div>

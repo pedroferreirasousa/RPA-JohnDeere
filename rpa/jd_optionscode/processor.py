@@ -36,5 +36,5 @@ def processar_chassi(pin: str, token: str) -> int:
     df = pd.read_excel(io.BytesIO(response.content), engine="openpyxl")
     df["CHASSI_REFERENCIA"] = pin.strip()
 
-    from rpa.db_inserter import inserir_no_banco
+    from rpa.jd_optionscode.db_inserter import inserir_no_banco
     return inserir_no_banco(df)

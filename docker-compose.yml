@@ -5,6 +5,7 @@ services:
       - "8000:8000"
       - "6080:6080"
     volumes:
+      - .:/app
       - ./db:/app/db
       - ./data:/app/data
     env_file:
@@ -12,6 +13,7 @@ services:
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate --run-syncdb &&
+             python manage.py collectstatic --noinput &&
              python manage.py runserver 0.0.0.0:8000"
 
   airflow-init:

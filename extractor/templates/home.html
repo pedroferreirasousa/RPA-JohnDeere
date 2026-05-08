@@ -1,0 +1,43 @@
+{% extends "extractor/base.html" %}
+
+{% block page_title %}Home{% endblock %}
+{% block topbar_title %}Portal de Automações{% endblock %}
+
+{% block content %}
+
+<div class="home-hero">
+  <h2 class="home-hero-title">Automações Disponíveis</h2>
+  <p class="home-hero-sub">Selecione um RPA para acessar o painel de controle e monitoramento.</p>
+</div>
+
+<div class="rpa-grid">
+  {% for rpa in rpas %}
+  <div class="rpa-card">
+    <div class="rpa-card-stripe"></div>
+    <div class="rpa-card-body">
+      <div class="rpa-card-header">
+        <div>
+          <p class="rpa-card-name">{{ rpa.name }}</p>
+          <p class="rpa-card-id">{{ rpa.slug }}</p>
+        </div>
+      </div>
+      <p class="rpa-card-desc">{{ rpa.description }}</p>
+      <div class="rpa-card-tags">
+        {% for tag in rpa.tags %}
+          <span class="rpa-tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="rpa-card-footer">
+
+      <a href="{{ rpa.url }}" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-arrow-right"></i>Acessar
+      </a>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">Nenhum RPA cadastrado.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

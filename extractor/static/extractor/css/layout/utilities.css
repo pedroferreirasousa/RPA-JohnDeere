@@ -1,0 +1,24 @@
+/* ── Utilitários genéricos ───────────────────────────────────────────────── */
+
+/* Cor de texto */
+.text-green   { color: var(--green); }
+.text-danger  { color: var(--danger); }
+.text-muted   { color: var(--text-muted); }
+.text-white   { color: #fff; }
+.text-center  { text-align: center; }
+
+/* Tamanho de texto */
+.text-small   { font-size: .85rem; }
+.text-xs      { font-size: .75rem; }
+
+/* Peso */
+.fw-bold { font-weight: 700; }
+
+/* Espaçamento */
+.mt-auto { margin-top: auto; }
+.mb-sm   { margin-bottom: .5rem; }
+.mt-sm   { margin-top: .5rem; }
+
+/* Display */
+.hidden  { display: none !important; }
+.w-100   { width: 100%; }

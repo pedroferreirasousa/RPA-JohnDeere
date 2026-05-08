@@ -1,0 +1,27 @@
+/* ════════════════════════════════════════════════════════════════
+   main.css  —  JD Option Codes Portal
+   Entrypoint: importa todos os módulos.
+   Para adicionar um novo RPA/página, crie um novo entrypoint
+   (ex: rpa_xyz.css) que importe os módulos que precisar.
+   ════════════════════════════════════════════════════════════════ */
+
+/* — Base ——————————————————————————————————————————————————————— */
+@import url('./base/variables.css');
+@import url('./base/reset.css');
+
+/* — Layout ————————————————————————————————————————————————————— */
+@import url('./layout/sidebar.css');
+@import url('./layout/grid.css');
+@import url('./layout/utilities.css');
+
+/* — Componentes ————————————————————————————————————————————————— */
+@import url('./components/navbar.css');
+@import url('./components/card.css');
+@import url('./components/button.css');
+@import url('./components/badge.css');
+@import url('./components/status.css');
+@import url('./components/modal.css');
+@import url('./components/table.css');
+@import url('./components/form.css');
+@import url('./components/spinner.css');
+@import url('./components/rpa_card.css');

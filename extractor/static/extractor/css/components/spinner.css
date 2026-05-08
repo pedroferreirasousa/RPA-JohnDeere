@@ -1,0 +1,56 @@
+/* ── Spinner de carregamento ─────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  border: 3px solid var(--border);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.spinner-lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-width: 4px;
+  border-top-color: var(--blue);
+}
+
+.spinner-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+  vertical-align: middle;
+}
+
+/* ── Barra de progresso ──────────────────────────────────────────────────── */
+.progress {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 50px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+@keyframes progress-stripes {
+  from { background-position: 1rem 0; }
+  to   { background-position: 0 0; }
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 50px;
+  transition: width .3s ease;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255,255,255,.15) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,.15) 50%,
+    rgba(255,255,255,.15) 75%, transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: progress-stripes 1s linear infinite;
+}

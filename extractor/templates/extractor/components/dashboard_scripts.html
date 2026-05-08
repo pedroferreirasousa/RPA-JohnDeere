@@ -1,0 +1,240 @@
+{# components/dashboard_scripts.html — JS do dashboard (incluído via {% include %}) #}
+<script>
+const CSRF = "{{ csrf_token }}";
+
+// URLs geradas pelo Django (evita hardcode de paths)
+const URLS = {
+  authStart:          "{% url 'auth_start' %}",
+  authStatusBase:     "{% url 'auth_status' job_id='__ID__' %}".replace('__ID__', ''),
+  authManualSave:     "{% url 'auth_manual_save' %}",
+  implementStart:     "{% url 'implement_start' %}",
+  implementStatusBase:"{% url 'implement_status' job_id='__ID__' %}".replace('__ID__', ''),
+  uploadExcel:        "{% url 'upload_chassis_excel' %}",
+};
+
+/* ── Sistema de modais ─────────────────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Abre modal pelo atributo [data-open-modal="<id>"]
+document.querySelectorAll('[data-open-modal]').forEach(btn => {
+  btn.addEventListener('click', () => openModal(btn.dataset.openModal));
+});
+
+// Fecha pelo atributo [data-close-modal]
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-close-modal]');
+  if (btn) {
+    const modal = btn.closest('.modal');
+    if (modal) closeModal(modal.id);
+  }
+});
+
+// Clique no overlay fecha (salvo modais com [data-static])
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', e => {
+    if (e.target === modal && !modal.hasAttribute('data-static')) closeModal(modal.id);
+  });
+});
+
+/* ── Salvar token manual ───────────────────────────────────────────────────── */
+document.getElementById('btn-save-manual-token').addEventListener('click', () => {
+  const token    = document.getElementById('manual-token-input').value.trim();
+  const feedback = document.getElementById('manual-auth-feedback');
+
+  if (!token) {
+    feedback.className   = 'text-danger';
+    feedback.textContent = 'Cole o Bearer token antes de salvar.';
+    feedback.classList.remove('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-manual-token');
+  btn.disabled  = true;
+  btn.innerHTML = '<div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;display:inline-block;"></div> Salvando...';
+
+  fetch(URLS.authManualSave, {
+    method:  'POST',
+    headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ token }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'ok') {
+      feedback.className   = 'fw-bold text-green';
+      feedback.textContent = '✓ ' + data.message;
+      feedback.classList.remove('hidden');
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      feedback.className   = 'text-danger';
+      feedback.textContent = data.error || 'Erro desconhecido.';
+      feedback.classList.remove('hidden');
+      btn.disabled  = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Token';
+    }
+  })
+  .catch(err => {
+    feedback.className   = 'text-danger';
+    feedback.textContent = 'Erro de rede: ' + err;
+    feedback.classList.remove('hidden');
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Token';
+  });
+});
+
+/* ── Upload de Excel ───────────────────────────────────────────────────────── */
+document.getElementById('btn-upload-excel').addEventListener('click', () => {
+  const fileInput = document.getElementById('excel-file');
+  const feedback  = document.getElementById('excel-feedback');
+
+  if (!fileInput.files.length) {
+    feedback.className   = 'text-danger';
+    feedback.textContent = 'Selecione um arquivo antes de carregar.';
+    feedback.classList.remove('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('btn-upload-excel');
+  btn.disabled  = true;
+  btn.innerHTML = '<div class="spinner spinner-sm" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;display:inline-block;"></div> Carregando...';
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  fetch(URLS.uploadExcel, {
+    method:  'POST',
+    headers: { 'X-CSRFToken': CSRF },
+    body:    formData,
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      feedback.className   = 'text-danger';
+      feedback.textContent = '✗ ' + data.error;
+      feedback.classList.remove('hidden');
+      btn.disabled  = false;
+      btn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar';
+    } else {
+      feedback.className   = 'fw-bold text-green';
+      feedback.textContent = `✓ ${data.added} chassis adicionados, ${data.skipped} já existiam.`;
+      feedback.classList.remove('hidden');
+      setTimeout(() => location.reload(), 1600);
+    }
+  })
+  .catch(err => {
+    feedback.className   = 'text-danger';
+    feedback.textContent = 'Erro de rede: ' + err;
+    feedback.classList.remove('hidden');
+    btn.disabled  = false;
+    btn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar';
+  });
+});
+
+/* ── Autenticar ────────────────────────────────────────────────────────────── */
+document.getElementById('btn-auth').addEventListener('click', () => {
+  openModal('authModal');
+
+  fetch(URLS.authStart, { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+  .then(r => r.json())
+  .then(({ job_id }) => {
+    pollJob(
+      URLS.authStatusBase + job_id + '/',
+      'auth-message', 'auth-spinner', 'auth-footer',
+      () => setTimeout(() => location.reload(), 1500),
+    );
+  })
+  .catch(err => {
+    document.getElementById('auth-message').textContent = 'Erro ao iniciar: ' + err;
+    document.getElementById('auth-spinner').innerHTML   = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+    document.getElementById('auth-footer').classList.remove('hidden');
+  });
+});
+
+/* ── Implementar ───────────────────────────────────────────────────────────── */
+document.getElementById('btn-implement')?.addEventListener('click', () => {
+  if (!confirm('Processar todos os chassis pendentes e inserir no banco?')) return;
+
+  openModal('implementModal');
+
+  fetch(URLS.implementStart, { method: 'POST', headers: { 'X-CSRFToken': CSRF } })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      document.getElementById('impl-message').textContent = '❌ ' + data.error;
+      document.getElementById('impl-spinner').innerHTML   = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+      document.getElementById('impl-footer').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('impl-progress-bar').classList.remove('hidden');
+    pollImplement(URLS.implementStatusBase + data.job_id + '/', data.total);
+  })
+  .catch(err => {
+    document.getElementById('impl-message').textContent = 'Erro ao iniciar: ' + err;
+    document.getElementById('impl-spinner').innerHTML   = '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+    document.getElementById('impl-footer').classList.remove('hidden');
+  });
+});
+
+/* ── Poll genérico (auth) ──────────────────────────────────────────────────── */
+function pollJob(url, msgId, spinnerId, footerId, onDone) {
+  const interval = setInterval(() => {
+    fetch(url).then(r => r.json()).then(data => {
+      document.getElementById(msgId).textContent = data.message;
+
+      if (data.vnc_url) {
+        const container = document.getElementById('auth-vnc-container');
+        if (container && !document.getElementById('auth-vnc-frame')) {
+          container.innerHTML = `
+            <div style="margin-top:1rem;">
+              <p class="text-muted text-small" style="margin-bottom:.5rem;">
+                <i class="fa-solid fa-desktop" style="margin-right:.25rem;"></i>
+                Navegador aberto — aprove o MFA no celular para continuar:
+              </p>
+              <iframe id="auth-vnc-frame" src="${data.vnc_url}"
+                      style="width:100%;height:540px;border:1px solid #dee2e6;border-radius:6px;"
+                      allow="clipboard-read; clipboard-write"></iframe>
+            </div>`;
+        }
+      }
+
+      if (data.status === 'done' || data.status === 'error') {
+        clearInterval(interval);
+        const container = document.getElementById('auth-vnc-container');
+        if (container) container.innerHTML = '';
+        document.getElementById(spinnerId).innerHTML = data.status === 'done'
+          ? '<i class="fa-solid fa-circle-check fa-3x text-green"></i>'
+          : '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+        document.getElementById(footerId).classList.remove('hidden');
+        if (data.status === 'done' && onDone) onDone();
+      }
+    });
+  }, 3000);
+}
+
+/* ── Poll implement (com barra de progresso) ───────────────────────────────── */
+function pollImplement(url, total) {
+  const interval = setInterval(() => {
+    fetch(url).then(r => r.json()).then(data => {
+      document.getElementById('impl-message').textContent = data.message;
+      const pct = total > 0 ? Math.round(((data.done || 0) / total) * 100) : 0;
+      document.getElementById('impl-progress').style.width = pct + '%';
+
+      if (data.status === 'done' || data.status === 'error') {
+        clearInterval(interval);
+        document.getElementById('impl-progress').style.width = '100%';
+        document.getElementById('impl-spinner').innerHTML = data.status === 'done'
+          ? '<i class="fa-solid fa-circle-check fa-3x text-green"></i>'
+          : '<i class="fa-solid fa-circle-xmark fa-3x text-danger"></i>';
+        document.getElementById('impl-footer').classList.remove('hidden');
+      }
+    });
+  }, 2000);
+}
+
+/* ── Detalhes do log ───────────────────────────────────────────────────────── */
+function openLogDetail(btn) {
+  document.getElementById('log-date').textContent   = btn.dataset.date;
+  document.getElementById('log-detail').textContent = btn.dataset.detail || '(sem detalhes)';
+  openModal('logDetailModal');
+}
+</script>

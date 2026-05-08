@@ -1,0 +1,51 @@
+/* ── Navbar ──────────────────────────────────────────────────────────────── */
+.navbar {
+  background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  padding: .85rem 0;
+  margin-bottom: 1.5rem;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .3px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.navbar-brand .sep {
+  color: rgba(255,255,255,.5);
+  font-weight: 400;
+}
+
+/* Badge "Online" no canto direito */
+.badge-online {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 500;
+  padding: .25em .65em;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.badge-online-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7ddc6b;
+  display: inline-block;
+  flex-shrink: 0;
+}

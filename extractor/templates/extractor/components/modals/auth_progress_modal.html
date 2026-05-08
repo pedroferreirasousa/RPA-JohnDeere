@@ -1,0 +1,24 @@
+{# modals/auth_progress_modal.html — Modal de progresso da autenticação automática #}
+<div class="modal" id="authModal" data-static>
+  <div class="modal-box modal-xl">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="fa-solid fa-fingerprint text-green"></i>Autenticando JD...
+      </h5>
+    </div>
+
+    <div class="modal-body" style="text-align:center;">
+      <div id="auth-status-area">
+        <div id="auth-spinner" style="margin-bottom:.75rem;">
+          <div class="spinner"></div>
+        </div>
+        <p id="auth-message" class="text-muted" style="margin:0;">Iniciando...</p>
+      </div>
+      <div id="auth-vnc-container" style="margin-top:.75rem;"></div>
+    </div>
+
+    <div class="modal-footer hidden" id="auth-footer">
+      <button class="btn btn-secondary" data-close-modal>Fechar</button>
+    </div>
+  </div>
+</div>

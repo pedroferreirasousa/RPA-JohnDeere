@@ -1,0 +1,75 @@
+{# modals/manual_auth_modal.html — Modal de autenticação manual por Bearer token #}
+<div class="modal" id="manualAuthModal">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="fa-solid fa-hand text-muted"></i>
+        Autenticação Manual — JD Warranty System
+      </h5>
+      <button class="btn-close" data-close-modal aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="step-list">
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Abra o JD Warranty System no seu navegador</strong>
+            <p>Clique no botão abaixo. Faça o login normalmente (usuário, senha e aprovação no Okta Verify).</p>
+            <div class="mt-sm">
+              <a href="https://jdwarrantysystem.deere.com" target="_blank" rel="noopener noreferrer"
+                 class="btn btn-success btn-sm">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>Abrir JD Warranty System
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Abra as ferramentas de desenvolvedor (F12)</strong>
+            <p>
+              Após o login, pressione <kbd>F12</kbd> → aba <strong>Network (Rede)</strong> →
+              no filtro escreva <code>products</code>.<br>
+              Aguarde um instante ou atualize a página — deve aparecer uma request para
+              <code>/api/products/...</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Copie o Bearer token</strong>
+            <p>
+              Clique na request → aba <strong>Headers</strong> →
+              procure <strong>Authorization</strong> em <em>Request Headers</em>.<br>
+              Copie o valor inteiro: <code>Bearer eyJ...</code>
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Cole o token abaixo e salve</strong>
+            <textarea id="manual-token-input" class="form-input mono"
+                      rows="3" style="margin-top:.5rem;"
+                      placeholder="Bearer eyJ..."></textarea>
+            <div id="manual-auth-feedback" class="hidden" style="margin-top:.5rem;font-size:.85rem;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancelar</button>
+      <button class="btn btn-success" id="btn-save-manual-token">
+        <i class="fa-solid fa-floppy-disk"></i>Salvar Token
+      </button>
+    </div>
+  </div>
+</div>

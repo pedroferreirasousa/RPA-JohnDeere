@@ -1,0 +1,116 @@
+/* ── Cards de RPA na Home ────────────────────────────────────────────────── */
+
+/* Grade de cards */
+.rpa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Card individual */
+.rpa-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.rpa-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.1), 0 12px 32px rgba(0,0,0,.1);
+  transform: translateY(-2px);
+}
+
+/* Faixa de cor no topo do card */
+.rpa-card-stripe {
+  height: 4px;
+  background: linear-gradient(90deg, var(--green-dark), var(--green));
+}
+
+.rpa-card-body {
+  padding: 1.35rem 1.35rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Linha de ícone + nome */
+.rpa-card-header {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  margin-bottom: .85rem;
+}
+
+.rpa-card-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.rpa-card-id {
+  font-size: .7rem;
+  color: var(--text-muted);
+  font-family: 'Courier New', monospace;
+  margin-top: .1rem;
+}
+
+/* Descrição */
+.rpa-card-desc {
+  font-size: .84rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+/* Tags */
+.rpa-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-bottom: 1rem;
+}
+
+.rpa-tag {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .2em .6em;
+  border-radius: 20px;
+  background: #f0f2f5;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Rodapé do card com status + botão */
+.rpa-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1.35rem;
+  border-top: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+/* ── Seção Hero da Home ──────────────────────────────────────────────────── */
+.home-hero {
+  margin-bottom: .25rem;
+}
+
+.home-hero-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 .35rem;
+}
+
+.home-hero-sub {
+  color: var(--text-muted);
+  font-size: .9rem;
+}

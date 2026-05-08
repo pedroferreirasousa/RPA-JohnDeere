@@ -1,0 +1,26 @@
+{# modals/implement_progress_modal.html — Modal de progresso da implementação #}
+<div class="modal" id="implementModal" data-static>
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="fa-solid fa-gears" style="color:var(--blue);"></i>Processando chassis...
+      </h5>
+    </div>
+
+    <div class="modal-body" style="text-align:center;padding-top:1.5rem;padding-bottom:1.5rem;">
+      <div id="impl-spinner" style="margin-bottom:1rem;">
+        <div class="spinner spinner-lg"></div>
+      </div>
+      <p id="impl-message" class="text-muted" style="margin:0;">Iniciando...</p>
+      <div class="progress hidden" id="impl-progress-bar">
+        <div class="progress-bar" id="impl-progress" style="width:0%;"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer hidden" id="impl-footer">
+      <button class="btn btn-secondary" onclick="location.reload()">
+        <i class="fa-solid fa-rotate-right"></i>Fechar e atualizar
+      </button>
+    </div>
+  </div>
+</div>

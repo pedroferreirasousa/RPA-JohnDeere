@@ -1,0 +1,167 @@
+/* ── Card base ──────────────────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow .2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.09);
+}
+
+/* ── Card de estatística (summary bar) ──────────────────────────────────── */
+.card-stat {
+  padding: .85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+}
+
+.stat-label {
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-muted);
+  margin-bottom: .15rem;
+}
+
+.stat-value            { font-size: .95rem; font-weight: 700; }
+.stat-value.green      { color: var(--green); }
+.stat-value.danger     { color: var(--danger); }
+.stat-value.expired    { color: var(--orange); }
+
+/* ── Cabeçalho e corpo ──────────────────────────────────────────────────── */
+.card-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: .9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.card-header-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+  flex: 1;
+}
+
+/* Corpo com flex column (para botões no rodapé) */
+.card-body-flex {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-footer-actions {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+/* ── Ícones do card ─────────────────────────────────────────────────────── */
+.card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+
+.card-icon-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-green { background: var(--green-light); color: var(--green); }
+.icon-blue  { background: var(--blue-light);  color: var(--blue); }
+.icon-gray  { background: #f0f2f5;            color: var(--text-muted); }
+
+/* ── Info de token ──────────────────────────────────────────────────────── */
+.token-info {
+  background: #f8faf7;
+  border: 1px solid #d4e8cf;
+  border-radius: var(--radius-sm);
+  padding: .85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.token-info.expired {
+  background: #fff8f3;
+  border-color: #f5cba7;
+}
+
+.token-info-label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  color: var(--text-muted);
+  font-size: .75rem;
+  margin-bottom: .2rem;
+}
+
+.token-info-value {
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+/* ── Tags de chassi ─────────────────────────────────────────────────────── */
+.chassi-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+}
+
+.chassi-tag {
+  font-family: 'Courier New', monospace;
+  font-size: .78rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: .3rem .6rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+
+/* ── Estado vazio ───────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2.5rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+}
+
+.empty-state i { font-size: 2rem; }

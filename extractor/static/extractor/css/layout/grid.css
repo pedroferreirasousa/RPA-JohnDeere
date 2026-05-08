@@ -1,0 +1,33 @@
+/* ── Container ──────────────────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* ── Grids de página ──────────────────────────────────────────────────────── */
+
+/* Barra de resumo (4 colunas) */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Grade principal (coluna auth 1fr + coluna conteúdo 2fr) */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+}
+
+/* Elemento que ocupa toda a largura na main-grid */
+.span-full { grid-column: 1 / -1; }
+
+/* ── Responsivo ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-grid    { grid-template-columns: 1fr; }
+}

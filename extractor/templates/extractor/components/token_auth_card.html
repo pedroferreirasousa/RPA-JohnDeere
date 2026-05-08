@@ -1,0 +1,63 @@
+{% load tz %}
+{# components/token_auth_card.html — Card de autenticação JD #}
+<div class="card" style="display:flex;flex-direction:column;">
+  <div class="card-header">
+    <div class="card-icon icon-green"><i class="fa-solid fa-key"></i></div>
+    <strong>Autenticação JD</strong>
+  </div>
+
+  <div class="card-body-flex">
+
+    {% if active_token %}
+      {% if token_expired %}
+        <div class="status-pill expired">
+          <span class="status-dot orange"></span>Token Expirado
+        </div>
+        <div class="token-info expired">
+          <div class="token-info-label">
+            <i class="fa-regular fa-clock" style="font-size:.8rem;"></i>
+            <span>Capturado em</span>
+          </div>
+          <div class="token-info-value">{{ active_token.captured_at|localtime|date:"d/m/Y H:i" }}</div>
+        </div>
+        <p class="text-muted text-small mt-auto">
+          O token foi capturado há mais de 1 hora e pode ter expirado no portal JD.
+          Autentique novamente para garantir acesso.
+        </p>
+      {% else %}
+        <div class="status-pill active">
+          <span class="status-dot green"></span>Token Ativo
+        </div>
+        <div class="token-info">
+          <div class="token-info-label">
+            <i class="fa-regular fa-clock text-green" style="font-size:.8rem;"></i>
+            <span>Capturado em</span>
+          </div>
+          <div class="token-info-value">{{ active_token.captured_at|localtime|date:"d/m/Y H:i" }}</div>
+        </div>
+        <p class="text-muted text-small mt-auto">
+          Tokens expiram após ~1h de inatividade. Se "Implementar" retornar erro 401,
+          autentique novamente.
+        </p>
+      {% endif %}
+    {% else %}
+      <div class="status-pill inactive">
+        <span class="status-dot red"></span>Sem Token
+      </div>
+      <p class="text-muted text-small">
+        Nenhum token ativo. Clique em <strong>Autenticar</strong> para iniciar o processo —
+        o sistema abrirá o navegador, preencherá as credenciais e aguardará somente a
+        aprovação do MFA no celular.
+      </p>
+    {% endif %}
+
+    <div class="card-footer-actions">
+      <button class="btn btn-primary w-100" id="btn-auth">
+        <i class="fa-solid fa-fingerprint"></i>Autenticar no JD
+      </button>
+      <button class="btn btn-outline w-100 btn-sm" data-open-modal="manualAuthModal">
+        <i class="fa-solid fa-paste"></i>Colar token manualmente
+      </button>
+    </div>
+  </div>
+</div>

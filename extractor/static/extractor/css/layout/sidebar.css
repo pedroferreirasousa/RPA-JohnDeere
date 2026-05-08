@@ -1,0 +1,213 @@
+/* ── Sidebar fixa ────────────────────────────────────────────────────────── */
+:root {
+  --sidebar-width: 240px;
+  --sidebar-bg:    #1a3d14;
+  --sidebar-hover: rgba(255,255,255,.08);
+  --sidebar-active: rgba(255,255,255,.14);
+  --sidebar-border: rgba(255,255,255,.08);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+/* ── Logo / Marca ────────────────────────────────────────────────────────── */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 1.35rem 1.25rem 1.1rem;
+  border-bottom: 1px solid var(--sidebar-border);
+  text-decoration: none;
+}
+
+.sidebar-brand-logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-logo-placeholder {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255,222,0,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--yellow);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.sidebar-brand-name {
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.sidebar-brand-sub {
+  color: rgba(255,255,255,.45);
+  font-size: .68rem;
+  font-weight: 400;
+  margin-top: .1rem;
+}
+
+/* ── Seções de nav ──────────────────────────────────────────────────────── */
+.sidebar-nav   { flex: 1; padding: .75rem 0; }
+
+.sidebar-section {
+  margin-bottom: .25rem;
+}
+
+.sidebar-section-label {
+  padding: .5rem 1.25rem .25rem;
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.3);
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem 1.25rem;
+  color: rgba(255,255,255,.65);
+  font-size: .84rem;
+  font-weight: 500;
+  border-radius: 0;
+  transition: background .15s, color .15s;
+  text-decoration: none;
+  position: relative;
+}
+
+.sidebar-link i {
+  width: 16px;
+  text-align: center;
+  font-size: .85rem;
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+  background: var(--sidebar-hover);
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: var(--sidebar-active);
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--yellow);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Badge na sidebar (ex: contador pendentes) ───────────────────────────── */
+.sidebar-badge {
+  margin-left: auto;
+  background: rgba(255,222,0,.2);
+  color: var(--yellow);
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .15em .55em;
+  border-radius: 20px;
+}
+
+/* ── Rodapé da sidebar ───────────────────────────────────────────────────── */
+.sidebar-footer {
+  padding: .85rem 1.25rem;
+  border-top: 1px solid var(--sidebar-border);
+  color: rgba(255,255,255,.3);
+  font-size: .7rem;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.sidebar-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7ddc6b;
+  flex-shrink: 0;
+}
+
+/* ── Wrapper da página (desloca para a direita da sidebar) ───────────────── */
+.page-wrapper {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────────────────── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: .9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.topbar-title {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+
+.topbar-breadcrumb a     { color: var(--text-muted); }
+.topbar-breadcrumb a:hover { color: var(--green); }
+.topbar-breadcrumb .sep  { color: #ced4da; }
+
+/* ── Área de conteúdo principal ─────────────────────────────────────────── */
+.main-content {
+  padding: 1.5rem 1.75rem 3rem;
+  flex: 1;
+}
+
+/* ── Responsivo (hamburger futuro) ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar       { transform: translateX(-100%); transition: transform .2s; }
+  .sidebar.open  { transform: translateX(0); }
+  .page-wrapper  { margin-left: 0; }
+}

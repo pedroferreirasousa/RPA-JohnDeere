@@ -1,0 +1,30 @@
+{# modals/upload_excel_modal.html — Modal de upload de chassis por Excel #}
+<div class="modal" id="uploadExcelModal">
+  <div class="modal-box modal-md">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="fa-solid fa-file-excel text-green"></i>
+        Carregar Chassis por Excel
+      </h5>
+      <button class="btn-close" data-close-modal aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted text-small" style="margin-bottom:1rem;">
+        Selecione um arquivo <strong>.xlsx</strong> com uma coluna de chassis / PIN.<br>
+        O sistema detecta automaticamente colunas nomeadas
+        <code>pin</code>, <code>chassi</code>, <code>chassis</code> ou <code>vin</code>.
+        Se nenhuma for encontrada, usa a primeira coluna.
+      </p>
+      <input type="file" id="excel-file" accept=".xlsx" class="form-input">
+      <div id="excel-feedback" class="hidden" style="margin-top:.75rem;font-size:.85rem;"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Cancelar</button>
+      <button class="btn btn-primary" id="btn-upload-excel">
+        <i class="fa-solid fa-upload"></i>Carregar
+      </button>
+    </div>
+  </div>
+</div>

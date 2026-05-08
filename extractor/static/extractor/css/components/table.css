@@ -1,0 +1,25 @@
+/* ── Tabela ──────────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+.table { font-size: .875rem; }
+
+.table thead th {
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: .72rem;
+  letter-spacing: .5px;
+  border-bottom: 2px solid var(--border);
+  padding: .65rem 1rem;
+  white-space: nowrap;
+  background: var(--white);
+}
+
+.table tbody td {
+  padding: .7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td      { background: #f8f9fa; }

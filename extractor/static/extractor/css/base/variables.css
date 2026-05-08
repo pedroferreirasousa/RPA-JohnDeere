@@ -1,0 +1,37 @@
+/* ── Variáveis globais ────────────────────────────────────────────────────── */
+:root {
+  /* Marca */
+  --green:          #367c2b;
+  --green-dark:     #2a6122;
+  --green-light:    #e8f5e3;
+  --yellow:         #ffde00;
+
+  /* Superfícies */
+  --surface:        #f4f6f9;
+  --white:          #ffffff;
+  --border:         #edf0f4;
+
+  /* Texto */
+  --text:           #212529;
+  --text-muted:     #6c757d;
+
+  /* Semânticas */
+  --danger:         #c62828;
+  --danger-light:   #fdecea;
+  --blue:           #1a73e8;
+  --blue-light:     #e8f0fe;
+  --amber:          #856404;
+  --amber-light:    #fff3cd;
+  --orange:         #e65100;
+  --orange-light:   #fff3e0;
+
+  /* Elevação */
+  --card-shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.06);
+
+  /* Raios */
+  --radius:         14px;
+  --radius-sm:      8px;
+
+  /* Tipografia */
+  --font:           'Inter', sans-serif;
+}

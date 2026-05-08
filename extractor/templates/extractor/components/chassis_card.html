@@ -1,0 +1,44 @@
+{# components/chassis_card.html — Card de chassis pendentes #}
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon icon-blue"><i class="fa-solid fa-list-check"></i></div>
+    <strong>Chassis Pendentes</strong>
+    {% if pending_count > 0 %}
+      <span class="badge badge-amber">{{ pending_count }} aguardando</span>
+    {% endif %}
+    <div class="card-header-end">
+      <button class="btn btn-outline btn-sm" data-open-modal="uploadExcelModal">
+        <i class="fa-solid fa-file-excel"></i>Carregar Excel
+      </button>
+      {% if pending_count > 0 %}
+        {% if active_token and not token_expired %}
+          <button class="btn btn-primary btn-sm" id="btn-implement">
+            <i class="fa-solid fa-play"></i>Implementar {{ pending_count }}
+          </button>
+        {% else %}
+          <button class="btn btn-outline btn-sm" disabled title="Autentique primeiro">
+            <i class="fa-solid fa-lock"></i>Sem token
+          </button>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if pending_chassis %}
+    <div class="chassi-tags">
+      {% for c in pending_chassis %}
+        <span class="chassi-tag">
+          {{ c.pin }}
+        </span>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fa-regular fa-circle-check text-green"></i>
+      <span class="text-small">
+        Nenhum chassi pendente.<br>
+        O Airflow ainda não enviou novos registros ou todos já foram processados.
+      </span>
+    </div>
+  {% endif %}
+</div>

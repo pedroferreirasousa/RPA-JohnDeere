@@ -1,0 +1,54 @@
+/* ── Inputs e textareas ──────────────────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+  border: 1px solid #ced4da;
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text);
+  line-height: 1.5;
+  transition: border-color .15s, box-shadow .15s;
+  resize: vertical;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(54,124,43,.15);
+}
+
+.form-input.mono {
+  font-family: 'Courier New', monospace;
+  font-size: .8rem;
+}
+
+/* ── Bloco de log / pre ──────────────────────────────────────────────────── */
+.pre-wrap {
+  background: #f8f9fa;
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  font-size: .8rem;
+  white-space: pre-wrap;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+
+/* ── Código inline ───────────────────────────────────────────────────────── */
+kbd {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  padding: .15em .35em;
+  font-size: .85em;
+  font-family: monospace;
+}
+
+code {
+  background: #f8f9fa;
+  border-radius: 3px;
+  padding: .1em .35em;
+  font-size: .85em;
+  color: #d63384;
+}

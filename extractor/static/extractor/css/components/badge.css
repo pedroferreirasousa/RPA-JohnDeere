@@ -1,0 +1,15 @@
+/* ── Badges inline ───────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: .28em .6em;
+  font-size: .75rem;
+  font-weight: 600;
+  border-radius: 50px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge-green  { background: var(--green-light);  color: var(--green-dark); }
+.badge-blue   { background: var(--blue-light);   color: var(--blue); }
+.badge-amber  { background: var(--amber-light);  color: var(--amber); }
+.badge-danger { background: var(--danger-light); color: var(--danger); }

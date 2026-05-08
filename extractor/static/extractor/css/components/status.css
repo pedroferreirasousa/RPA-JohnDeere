@@ -1,0 +1,29 @@
+/* ── Pílulas de status ───────────────────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .45rem 1rem;
+  border-radius: 50px;
+  font-size: .82rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  align-self: flex-start;
+}
+
+.status-pill.active   { background: var(--green-light);  color: var(--green-dark); }
+.status-pill.inactive { background: var(--danger-light); color: var(--danger); }
+.status-pill.expired  { background: var(--orange-light); color: var(--orange); }
+
+/* Ponto de status animado */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-dot.green  { background: var(--green);  box-shadow: 0 0 0 2px rgba(54,124,43,.25); }
+.status-dot.red    { background: #e53935;        box-shadow: 0 0 0 2px rgba(229,57,53,.25); }
+.status-dot.orange { background: #ef6c00;        box-shadow: 0 0 0 2px rgba(239,108,0,.25); }

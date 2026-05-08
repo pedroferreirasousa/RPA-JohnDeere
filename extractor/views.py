@@ -1,10 +1,12 @@
 import json
 import threading
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -12,24 +14,57 @@ from django.views.decorators.http import require_http_methods
 from .models import AuthToken, RunLog, StageChassi
 
 # ── In-memory job tracker (single-admin portal) ───────────────────────────────
-# Armazena status dos jobs em memória (auth e implement rodam em background)
 _jobs: dict = {}
 
+# ── Lista de RPAs registrados no portal ──────────────────────────────────────
+# Para adicionar um novo RPA, basta incluir um novo dict aqui.
+_RPAS = [
+    {
+        'slug':        'jd-optionscode',
+        'name':        'JD Option Codes',
+        'description': (
+            'Extração e implementação automática de option codes para chassis '
+            'John Deere via portal JD Warranty System. Integrado com Airflow para '
+            'ingestão de chassis e processamento em lote.'
+        ),
+        'tags':   ['John Deere', 'Warranty', 'Airflow'],
+        'status': 'active',
+        'url_name': 'jd_optionscode_dashboard',
+    },
+]
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
+
+# ── Home ──────────────────────────────────────────────────────────────────────
+
+def home(request):
+    rpas = [
+        {**rpa, 'url': reverse(rpa['url_name'])}
+        for rpa in _RPAS
+    ]
+    return render(request, 'home.html', {'rpas': rpas})
+
+
+# ── JD OptionCode — Dashboard ─────────────────────────────────────────────────
 
 def dashboard(request):
-    active_token = AuthToken.objects.filter(is_active=True).order_by('-captured_at').first()
+    active_token    = AuthToken.objects.filter(is_active=True).order_by('-captured_at').first()
     pending_chassis = StageChassi.objects.filter(status=StageChassi.STATUS_PENDING).order_by('-added_at')
-    run_logs = RunLog.objects.all()[:20]
-    done_count = StageChassi.objects.filter(status=StageChassi.STATUS_DONE).count()
+    run_logs        = RunLog.objects.all()[:20]
+    done_count      = StageChassi.objects.filter(status=StageChassi.STATUS_DONE).count()
+    pending_count   = pending_chassis.count()
+
+    # Token é considerado expirado após 1 hora da captura
+    token_expired = False
+    if active_token:
+        token_expired = (timezone.now() - active_token.captured_at) >= timedelta(hours=1)
 
     return render(request, 'extractor/dashboard.html', {
-        'active_token': active_token,
+        'active_token':    active_token,
+        'token_expired':   token_expired,
         'pending_chassis': pending_chassis,
-        'pending_count': pending_chassis.count(),
-        'run_logs': run_logs,
-        'done_count': done_count,
+        'pending_count':   pending_count,
+        'run_logs':        run_logs,
+        'done_count':      done_count,
     })
 
 
@@ -53,7 +88,7 @@ def _run_auth(job_id):
     django.db.close_old_connections()
 
     try:
-        from rpa.auth_capture import iniciar_vnc, parar_vnc, capturar_token_interativo
+        from rpa.jd_optionscode.auth_capture import iniciar_vnc, parar_vnc, capturar_token_interativo
 
         _jobs[job_id]["message"] = "Iniciando tela virtual e navegador..."
         iniciar_vnc()
@@ -74,7 +109,7 @@ def _run_auth(job_id):
 
     finally:
         try:
-            from rpa.auth_capture import parar_vnc
+            from rpa.jd_optionscode.auth_capture import parar_vnc
             parar_vnc()
         except Exception:
             pass
@@ -153,7 +188,7 @@ def _run_implement(job_id, chassis_list, token):
     detail_lines = []
 
     try:
-        from rpa.processor import processar_chassi
+        from rpa.jd_optionscode.processor import processar_chassi
 
         for i, pin in enumerate(chassis_list, 1):
             _jobs[job_id]["message"] = f"[{i}/{len(chassis_list)}] Processando {pin}..."
@@ -240,3 +275,48 @@ def api_ingest_chassis(request):
             skipped += 1
 
     return JsonResponse({"added": added, "skipped": skipped, "total": len(chassis_list)})
+
+
+# ── Chassis — Upload via Excel ────────────────────────────────────────────────
+
+@require_http_methods(["POST"])
+def upload_chassis_excel(request):
+    """Recebe um arquivo .xlsx e insere os chassis na fila de staging."""
+    uploaded = request.FILES.get('file')
+    if not uploaded:
+        return JsonResponse({'error': 'Nenhum arquivo enviado.'}, status=400)
+
+    try:
+        import pandas as pd
+        df = pd.read_excel(uploaded)
+    except Exception as e:
+        return JsonResponse({'error': f'Erro ao ler arquivo: {e}'}, status=400)
+
+    if df.empty or df.columns.empty:
+        return JsonResponse({'error': 'Arquivo vazio ou sem colunas.'}, status=400)
+
+    # Localiza coluna com os PINs: busca por nomes comuns, senão usa a primeira
+    col_names_lower = [str(c).lower().strip() for c in df.columns]
+    pin_col = df.columns[0]
+    for idx, name in enumerate(col_names_lower):
+        if name in ('pin', 'chassi', 'chassis', 'vin'):
+            pin_col = df.columns[idx]
+            break
+
+    pins = df[pin_col].dropna().astype(str).str.strip().tolist()
+
+    added = skipped = 0
+    for pin in pins:
+        if not pin:
+            continue
+        _, created = StageChassi.objects.get_or_create(
+            pin=pin,
+            defaults={'source': 'excel', 'status': StageChassi.STATUS_PENDING},
+        )
+        if created:
+            added += 1
+        else:
+            skipped += 1
+
+    return JsonResponse({'added': added, 'skipped': skipped})
+

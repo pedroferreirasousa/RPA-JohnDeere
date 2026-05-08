@@ -1,0 +1,52 @@
+{# components/stat_bar.html — Barra de resumo (4 cards) #}
+<div class="summary-grid">
+
+  <div class="card">
+    <div class="card-stat">
+      <div class="card-icon-lg icon-green"><i class="fa-solid fa-key"></i></div>
+      <div>
+        <div class="stat-label">Token</div>
+        {% if active_token %}
+          {% if token_expired %}
+            <div class="stat-value expired">Expirado</div>
+          {% else %}
+            <div class="stat-value green">Ativo</div>
+          {% endif %}
+        {% else %}
+          <div class="stat-value danger">Inativo</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-stat">
+      <div class="card-icon-lg icon-blue"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div>
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-value">{{ pending_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-stat">
+      <div class="card-icon-lg icon-green"><i class="fa-solid fa-circle-check"></i></div>
+      <div>
+        <div class="stat-label">Processados</div>
+        <div class="stat-value">{{ done_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-stat">
+      <div class="card-icon-lg icon-gray"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div>
+        <div class="stat-label">Execuções</div>
+        <div class="stat-value">{{ run_logs|length }}</div>
+      </div>
+    </div>
+  </div>
+
+</div>
